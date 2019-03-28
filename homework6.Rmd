@@ -1,0 +1,331 @@
+---
+title: "N741 Spring 2019 - Homework 6"
+author: "Melinda Higgins"
+date: "03/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Homework 6
+
+### Background and Information on HELP Dataset
+
+For homework 6, you will be working with the **HELP** (Health Evaluation and Linkage to Primary Care) Dataset.
+
+The HELP Dataset:
+
+* You can learn more about the HELP (Health Evaluation and Linkage to Primary Care) dataset at [https://nhorton.people.amherst.edu/sasr2/datasets.php](https://nhorton.people.amherst.edu/sasr2/datasets.php). This dataset is also used by Ken Kleinman and Nicholas J. Horton for their book "SAS and R: Data Management, Statistical Analysis, and Graphics" (which is another helpful textbook).
+
+* You can download the datasets from their website [https://nhorton.people.amherst.edu/sasr2/datasets.php](https://nhorton.people.amherst.edu/sasr2/datasets.php)
+
+* The original publication is referenced at [https://www.ncbi.nlm.nih.gov/pubmed/12653820?ordinalpos=17&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum](https://www.ncbi.nlm.nih.gov/pubmed/12653820?ordinalpos=17&itool=EntrezSystem2.PEntrez.Pubmed.Pubmed_ResultsPanel.Pubmed_DefaultReportPanel.Pubmed_RVDocSum)
+
+* The HELP documentation (including all forms/surveys/instruments used) are located at:
+    + [https://nhorton.people.amherst.edu/help/](https://nhorton.people.amherst.edu/help/)
+    + specifically the details on all BASELINE assessments are located in this PDF [https://nhorton.people.amherst.edu/help/HELP-baseline.pdf](https://nhorton.people.amherst.edu/help/HELP-baseline.pdf)
+    + with the follow up time points described in the PDF [https://nhorton.people.amherst.edu/help/HELP-followup.pdf](https://nhorton.people.amherst.edu/help/HELP-followup.pdf)
+
+### Summary of Entire HELP Dataset - Complete Codebook
+
+See complete data descriptions and codebook at [https://melindahiggins2000.github.io/N736Fall2017_HELPdataset/](https://melindahiggins2000.github.io/N736Fall2017_HELPdataset/)
+
+### Variables for Homework 6
+
+For Homework 6, you will focus only on these variables from the HELP dataset:
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(tidyverse)
+library(haven)
+helpdata <- haven::read_spss("helpmkh.sav")
+
+sub1 <- helpdata %>%
+  select(age, female, pss_fr, homeless, 
+         pcs, mcs, cesd)
+
+# create a function to get the label
+# label output from the attributes() function
+getlabel <- function(x) attributes(x)$label
+# getlabel(sub1$age)
+
+library(purrr)
+ldf <- purrr::map_df(sub1, getlabel) # this is a 1x15 tibble data.frame
+# t(ldf) # transpose for easier reading to a 15x1 single column list
+
+# using knitr to get a table of these
+# variable names for Rmarkdown
+library(knitr)
+knitr::kable(t(ldf),
+             col.names = c("Variable Label"),
+             caption="Use these variables from HELP dataset for Homework 06")
+
+h1 <- sub1
+```
+
+### Summary of the HELP data subset `h1` for Homework 6
+
+```{r}
+summary(h1)
+```
+
+---
+
+## Homework 6 Assignment
+
+Use this Rmarkdown document to help you get started on Homework 6. Add your code chunks below to answer each problem.
+
+For Homework 6, you will be looking at mental health in these subjects. First, you will be running a model to look at the continuous measure "MCS" which is the mental component score of the SF-36 quality of life instrument/questionnaire. Learn more at [https://www.optum.com/solutions/life-sciences/answer-research/patient-insights/sf-health-surveys/sf-36v2-health-survey.html](https://www.optum.com/solutions/life-sciences/answer-research/patient-insights/sf-health-surveys/sf-36v2-health-survey.html) or [https://www.rand.org/health-care/surveys_tools/mos/36-item-short-form.html](https://www.rand.org/health-care/surveys_tools/mos/36-item-short-form.html).
+
+You will use the (`mcs`) variable to run a linear regression.
+
+You will then look at homelessness (`homeless`) to perform a logistic regression for predicting homelessness. 
+
+### Homework 6 Linear regression problems
+
+1. [Model 1] Run a simple linear regression (`lm()`) for `mcs` using the `cesd` variable, which is a more specific measure for depression.
+
+2. Write the equation of the final fitted model (i.e. what is the intercept and the slope)? Write a sentence describing the model results (interpret the intercept and slope). 
+
+_NOTE: The `mcs` values range form 0 to 100 where the population norm for "normal mental health quality of life" is considered to be a 50. If you score higher than 50 on the `mcs` you have mental health better than the population norm and visa versa - if your `mcs` scores are less than 50 then your mental health is considered to be worse than the population norm._ 
+
+_Higher scores on the CESD indicate worse depression._
+
+3. How much variability in the `mcs` does the `cesd` explain? (what is the R<sup>2</sup>?) Write a sentence describing how well the `cesd` does in predicting the `mcs`.
+
+4. [Model 2] Run a second linear regression model (`lm()`) for the `mcs` putting in all of the other variables in the data subset `h1`: 
+    + `age`
+    + `female`
+    + `pss_fr`
+    + `homeless`
+    + `pcs`
+    + `cesd`
+    
+    + Print out the model results with the coefficients and tests and model fit statistics.
+
+5. Which variables are significant in the model? Write a sentence or two describing the impact of these variables for predicting mental component scores (HINT: interpret the coefficient terms).
+
+6. Following the example we did in class for the Prestige dataset [https://htmlpreview.github.io/?https://github.com/vhertzb/regression/blob/master/Regression.html](https://htmlpreview.github.io/?https://github.com/vhertzb/regression/blob/master/Regression.html), generate the diagnostic plots for this model with these 6 predictors (_e.g._ get the residual plot by variables, the added-variable plots, the Q-Q plot, diagnostic plots). Also run the VIFs to check for multicollinearity issues.
+
+---
+
+### Logistic regression examples and exercises
+
+We didn't work a full example in class with R code, however, here is some example code for you to use to work out the homework exercises below.
+
+#### Logistic regression model example
+
+Run logistic regression model (and save results) for predicting CESD =>16 which predicts risk for clinical depression by `pcs`, the physical components score from the SF-36.
+
+#### Table of Frequencies of CESD <16 and => 16
+
+```{r}
+# compute indicator for cesd => 16, add to h1
+h1 <- h1 %>%
+  mutate(cesd_gte16 = (cesd >= 16))
+
+# check frequencies of cesd_gte16
+table(h1$cesd_gte16)
+```
+
+#### Logistic regression model
+
+```{r}
+# run logistic regression using glm()
+m1 <- glm(cesd_gte16 ~ pcs, data=h1,
+          family=binomial)
+
+# look at the model results - minimal information
+m1
+```
+
+#### Summary of logistic regression model
+
+```{r}
+# summary of the model results - more detailed with p-values
+summary(m1)
+```
+
+**Remember** R outputs the RAW "beta" coefficients.
+
+```{r}
+# coefficients of the model - these are the
+# RAW Betas 
+coef(m1)
+```
+
+**Convert** the coefficients to odds ratios by taking the exponent of the coefficients.
+
+```{r}
+# take the exp to get the odds ratios
+exp(coef(m1))
+```
+
+So, the odds ratio of `pcs` for predicting CESD => 16 is 0.9386. This means for every 1 point increase in PCS scores (improved physical quality of life) the odds of having a higher CESD score (=>16) is 0.9386. Or, conversely, for every one point lower someone scores on their PCS, the odds of scoring at or above 16 on the CESD is (1/0.9386 =) 1.065.
+
+#### Logistic regression - save model predictions
+
+```{r}
+# look at the predicted probabilities
+# review the help for predict.glm
+m1.predict <- predict(m1, newdata=h1,
+                      type="response")
+```
+
+#### Plot of Predicted Probabilities for CESD => 16 by PCS
+
+Look at the plot below. What `pcs` value is the best for predicting between CESD scores above and below 16? Is there one? Do you think `pcs` is a good predictor for `cesd_gte16`?
+
+```{r}
+# plot the continuous predictor pcs
+# for the predicted probabilities for CESD => 16
+plot(h1$pcs, m1.predict)
+```
+
+In general, we usually look at probability of outcome > 0.5 as positive hainvg the outcome versus < 0.5 as negative not having the outcome. However, in this case a majority of the subjects in this HELP dataset were depressed, with (407/453 =) 89.8% of the subjects having CESD scores => 16. So, before we run a logistic regression, we know that the "null model" (with only an intercept term and NO predictors), will be correct 89.3% of the time. So, it will be important to see if the model correctly predicts ANY subjects with lower CESD scores (<16), since there are only 46 subjects which is only 10.2%.
+
+As the plot above and the table and scatterplot below shows, for the highest PCS value of 74.8, the probability of someone having a high CESD value is only 0.659. So, we need a different "cutpoint" to have any ability to predict individuals with lower CESD scores - at least for this PCS predictor, which doesn't seem like a very good predictor.
+
+```{r}
+# add predicted values to h1 dataset
+# then arrange (sort) by pcs and view 
+# highest values using tail
+h1 %>%
+  mutate(pcspredict = m1.predict) %>%
+  arrange(pcs) %>%
+  tail()
+
+ggplot(h1, aes(pcs, cesd)) +
+  geom_point() +
+  geom_hline(aes(yintercept = 16, color = "red"))
+```
+
+Anyway, let's try some prediction thresholds above 0.5. We'll start at 0.70  and try a few above that to see if there is a value that provides a reasonable tradeoff between false positives (people predicted to be depressed who aren't) and false negatives (people who predicted to NOT be depressed but who really are). Remember, this model is already skewed towards predicting that everyone is depressed.
+
+#### Try different decision thresholds (0.70, 0.75, 0.80, 0.85)
+
+Try different thresholds for deciding between the 2 outcomes (CESD < 16) versus (CESD =>16). These can vary from close to 0 to close to 1. The code below explores 0.70, 0.75, 0.80, 0.85. Try different ones and compare the confusion matrices to see how the tradeoffs change the false positives and false negatives.
+
+FYI - a good online calculator to explore is at [http://statpages.info/ctab2x2.html](http://statpages.info/ctab2x2.html).
+
+**NOTE** For the example code below, I'm looking at predicting homeless for a probability > 0.70 and higher. You may need to adjust this in your problems below. Typically this is set to around 0.5.
+
+```{r}
+# Look at the tradeoffs for threshold 0.75
+
+# confusion matrix
+table(h1$cesd_gte16, m1.predict > 0.70)
+
+# rearrange slightly
+# compare to this online calculator
+# http://statpages.info/ctab2x2.html
+
+t1 <- table(m1.predict > 0.70, h1$cesd_gte16)
+t1
+
+tpr <- t1[2,2]/(t1[2,2]+t1[1,2])
+tpr #senstivity
+tnr <- t1[1,1]/(t1[1,1]+t1[2,1])
+tnr #specificity
+
+# we can use these data to compile 
+#     TRUE Positives
+#     FALSE Positives
+#     TRUE Negatives
+#     FALSE Negatives
+
+# see what happens if we try other
+# threshold values
+t1 <- table(m1.predict > 0.75, h1$cesd_gte16)
+t1
+
+tpr <- t1[2,2]/(t1[2,2]+t1[1,2])
+tpr #senstivity
+tnr <- t1[1,1]/(t1[1,1]+t1[2,1])
+tnr #specificity
+
+t1 <- table(m1.predict > 0.80, h1$cesd_gte16)
+t1
+
+tpr <- t1[2,2]/(t1[2,2]+t1[1,2])
+tpr #senstivity
+tnr <- t1[1,1]/(t1[1,1]+t1[2,1])
+tnr #specificity
+
+t1 <- table(m1.predict > 0.85, h1$cesd_gte16)
+t1
+
+tpr <- t1[2,2]/(t1[2,2]+t1[1,2])
+tpr #senstivity
+tnr <- t1[1,1]/(t1[1,1]+t1[2,1])
+tnr #specificity
+```
+
+So, we have to set a pretty high threshold of 0.85 before we're predicting many subjects as not depressed, albeit at the expense of more false negatives.
+
+#### Option to use `gmodels` package and the `gmodels::CrossTable()` function to get your tables
+
+```{r}
+# another way to look at cross tables
+library(gmodels)
+CrossTable(h1$homeless, m1.predict > 0.80)
+```
+
+#### Making ROC Curves and computing AUC
+
+The code below will generate a ROC (receiver operating characteristic) curve and compute the AUC (area under the curve), which is also called the "C-statistic". Ideally we'd like the AUC > 0.7, and values of 0.8 and 0.9 are even better. An AUC of 1.0 indicates that the model is perfect - there are no false positives or false negatives, which never happens. _... well if it does happen, I'd be suspicious of the model..._
+
+```{r}
+# another way to look at tradeoffs
+# of picking different thresholds
+# make an ROC curve
+
+library(ROCR)
+p <- predict(m1, newdata=h1, 
+             type="response")
+pr <- prediction(p, as.numeric(h1$cesd_gte16))
+prf <- performance(pr, measure = "tpr", x.measure = "fpr")
+plot(prf)
+abline(a=0, b=1, col="red")
+
+# the area under this curve compared
+# to the y=x reference line
+# tells you how well the model is predicting
+# and AUC of 0.5 is a bad model - no better
+# than flipping a coin
+# AUC of 0.6-0.7 is still not very good
+# AUC of 0.7-0.8 is pretty good
+# AUC of 0.8-0.9 is good
+# AUC 0.9-1.0 is great 
+
+auc <- performance(pr, measure = "auc")
+auc <- auc@y.values[[1]]
+auc
+```
+
+The auc here is `r auc` which is not very good. The PCS is not a good predictor of CESD => 16 depression risk.
+
+---
+
+### Homework 6 problems for logistic regression
+
+7. [Model 3] Run a logistic regression (`glm()`) to predict `homeless` as a function of `mcs` scores. Show a `summary(model)` of the final fitted model and explain the coefficients. [**REMEMBER** to compute the Odds Ratios after you get the raw coefficient (betas), using `exp(coef(model))`)].
+
+8. Make a plot showing the probability curve - put the `mcs` values on the X-axis and the probability of `homeless` on the Y-axis (like `m1.predict` above). Based on this plot, do you think the `mcs` is a good predictor of homelessness? [**FYI** This plot is also called an "effect plot" is you're using `Rcmdr` to do these analyses.]
+
+9. Use the `predict()` function like the code example above to predict `homeless` and compare it back to the original data (see the code above for the tables using different thresholds for looking at correct predictions, false positives and false negatives). For this problem, go ahead and use a cutoff probability of 0.5. 
+
+    + How well did the model correctly predict `homeless`? (make the "confusion matrix" and look at the true positives and true negatives versus the false positives and false negatives).
+    + **EXTRA CREDIT** What threshold does the best job trading off between false positives and false negatives?
+    
+    
+10. Make an ROC curve plot and compute the AUC and explain if this is a good model for predicting `homeless` or not.
+
+---
+
+**Use R markdown to complete your homework and show all of your code and output in your final report - Turn in a PDF of your report to Canvas (show your code - use `echo=TRUE` for your R code chunks). **
+
+---
+
+
